@@ -1,32 +1,75 @@
+import { json } from "@remix-run/cloudflare";
+import { useLoaderData } from "@remix-run/react";
+import '@shopify/shopify-api/adapters/cf-worker';
+
+import {shopifyApi, ApiVersion, Session} from '@shopify/shopify-api';
+import {
+  Layout,
+  Page
+} from '@shopify/polaris';
+
+export const loader = async ({context, request}) => {
+  const {searchParams} = new URL(request.url);
+
+
+  // If no shop should redirect to the base non-embedded install page
+  // If shop and authenticated and no host redirect to embedded app
+  // 
+
+  // If no isEmbedded flag AND user is authenticated should redirect to embedded app
+
+  // If not authenticated should redirect to
+ 
+  const shopify = shopifyApi({
+		apiKey: context.SHOPIFY_APP_KEY,
+		apiSecretKey: context.SHOPIFY_APP_SECRET,
+		scopes: context.SHOPIFY_APP_SCOPE.split(','),
+		hostName: 'discounts-local.reideval.com',
+    isEmbeddedApp: true
+	});
+  const shop = shopify.utils.sanitizeShop(searchParams.get('shop'), true);
+
+  const isValid = await shopify.utils.validateHmac({hmac: searchParams.get('hmac'), timestamp: searchParams.get('timestamp')});
+  console.log('hmac?', isValid);
+
+  const sessionProperties = await context.SESSIONS.get(`offline_${shop}`, {type: 'json'});
+
+  if (!sessionProperties){
+    console.log('no session key found')
+  }
+  
+  const session = Session.fromPropertyArray(sessionProperties);
+
+  const client = new shopify.clients.Graphql({
+    session: session,
+    apiVersion: ApiVersion.January23,
+  });
+
+  const response = await client.query({data: `{
+    shop {
+      name
+    }
+    app {
+      title
+      installation {
+        accessScopes {
+          description
+          handle
+        }
+      }
+    }
+  }`});
+  return json(response.body);
+}
+
 export default function Index() {
+  const { data } = useLoaderData();
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial Hehee
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
-    </div>
+    <Page title={data.app.title}>
+      <Layout>
+        Welcome {data.shop.name}
+      </Layout>
+    </Page>
   );
 }
