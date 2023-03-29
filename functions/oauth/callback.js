@@ -14,8 +14,8 @@ export async function onRequest({request, env}) {
         rawRequest: request,
     });
     
-    env.SESSIONS.put(callback.session.id, JSON.stringify(callback.session.toPropertyArray()));
-    console.log('id', callback.session.id);
+    const result = await env.SESSIONS.put(callback.session.id, JSON.stringify(callback.session.toPropertyArray()));
+    console.log('id', callback.session.id, result);
     // You can now use callback.session to make API requests
     
     // The callback returns some HTTP headers, but you can redirect to any route here
