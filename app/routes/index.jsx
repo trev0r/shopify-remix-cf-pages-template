@@ -24,7 +24,7 @@ export const loader = async ({context, request}) => {
 		apiKey: context.SHOPIFY_APP_KEY,
 		apiSecretKey: context.SHOPIFY_APP_SECRET,
 		scopes: context.SHOPIFY_APP_SCOPE.split(','),
-		hostName: 'discounts-local.reideval.com',
+		hostName: context.CF_PAGES_URL,
     isEmbeddedApp: true
 	});
   const shop = shopify.utils.sanitizeShop(searchParams.get('shop'), true);

@@ -6,7 +6,7 @@ export async function onRequest({request, env}) {
 		apiKey: env.SHOPIFY_APP_KEY,
 		apiSecretKey: env.SHOPIFY_APP_SECRET,
 		scopes: env.SHOPIFY_APP_SCOPE.split(','),
-		hostName: 'discounts-local.reideval.com',
+		hostName: env.CF_PAGES_URL,
         isEmbeddedApp: true
 	});
 	
