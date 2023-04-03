@@ -1,51 +1,35 @@
 import { json } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import '@shopify/shopify-api/adapters/cf-worker';
-
-import {shopifyApi, ApiVersion, Session} from '@shopify/shopify-api';
+import { getSession } from "../../session-storage";
+import { redirectToAuth, validateRequest } from "../../helpers";
 import {
   Layout,
   Page
 } from '@shopify/polaris';
-
-export const loader = async ({context, request}) => {
-  const {searchParams} = new URL(request.url);
+//import {createWebhookHandlers} from '../../webhooks';
 
 
-  // If no shop should redirect to the base non-embedded install page
-  // If shop and authenticated and no host redirect to embedded app
-  // 
 
-  // If no isEmbedded flag AND user is authenticated should redirect to embedded app
+const requireValidSession = async (context, request) => {
+  const { searchParams } = new URL(request.url);
 
-  // If not authenticated should redirect to
- 
-  const shopify = shopifyApi({
-		apiKey: context.SHOPIFY_APP_KEY,
-		apiSecretKey: context.SHOPIFY_APP_SECRET,
-		scopes: context.SHOPIFY_APP_SCOPE.split(','),
-		hostName: context.APP_HOSTNAME,
-    isEmbeddedApp: true
-	});
-  const shop = shopify.utils.sanitizeShop(searchParams.get('shop'), true);
+  await validateRequest(context, request);
+  const shop = context.shopify.utils.sanitizeShop(searchParams.get('shop'));
+  const session = await getSession(context, shop);
 
-  const isValid = await shopify.utils.validateHmac({hmac: searchParams.get('hmac'), timestamp: searchParams.get('timestamp')});
-  console.log('hmac?', isValid);
-
-  const sessionProperties = await context.SESSIONS.get(`offline_${shop}`, {type: 'json'});
-
-  if (!sessionProperties){
-    console.log('no session key found')
+  if (!session){
+    redirectToAuth(context, request);
   }
-  
-  const session = Session.fromPropertyArray(sessionProperties);
+  return session;
+}
 
-  const client = new shopify.clients.Graphql({
-    session: session,
-    apiVersion: ApiVersion.January23,
-  });
 
-  const response = await client.query({data: `{
+export const loader = async ({ context, request }) => {
+  const session = await requireValidSession(context, request);
+  const client = new context.shopify.clients.Graphql({ session: session });
+
+  const response = await client.query({
+    data: `{
     shop {
       name
     }

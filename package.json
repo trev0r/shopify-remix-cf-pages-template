@@ -8,7 +8,8 @@
     "dev": "npm-run-all build --parallel \"dev:*\"",
     "start": "cross-env NODE_ENV=production npm run wrangler",
     "typecheck": "tsc",
-    "wrangler": "wrangler pages dev ./public --live-reload --kv=SESSIONS --persist"
+    "wrangler": "wrangler pages dev ./public --kv=SESSIONS --persist",
+    "shopify": "shopify"
   },
   "dependencies": {
     "@remix-run/cloudflare": "^1.14.3",

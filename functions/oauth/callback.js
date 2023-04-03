@@ -1,5 +1,7 @@
 import '@shopify/shopify-api/adapters/cf-worker';
-import {shopifyApi} from '@shopify/shopify-api';
+import { shopifyApi } from '@shopify/shopify-api';
+import { saveSession } from '../../session-storage';
+import { createWebhookHandlers } from '../../webhooks';
 
 export async function onRequest({request, env}) {
 	const shopify = shopifyApi({
@@ -14,11 +16,11 @@ export async function onRequest({request, env}) {
         rawRequest: request,
     });
     
-    const result = await env.SESSIONS.put(callback.session.id, JSON.stringify(callback.session.toPropertyArray()));
-    console.log('id', callback.session.id, result);
-    // You can now use callback.session to make API requests
-    
-    // The callback returns some HTTP headers, but you can redirect to any route here
+    await saveSession(env, callback.session);
+
+    await shopify.webhooks.addHandlers(createWebhookHandlers({...env, shopify}));
+    await shopify.webhooks.register({session: callback.session});
+
     const redirectURL = await shopify.auth.getEmbeddedAppUrl({
         rawRequest: request,
      });

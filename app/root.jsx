@@ -1,6 +1,5 @@
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -25,6 +24,7 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
+//AppBridgeProvider needs this.
 export const loader = async ({context}) => {
   return json({
 		apiKey: context.SHOPIFY_APP_KEY,
@@ -46,7 +46,7 @@ export default function App() {
         </PolarisProvider>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
+       
       </body>
     </html>
   );

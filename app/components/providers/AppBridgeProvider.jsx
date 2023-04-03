@@ -4,9 +4,6 @@ import { Provider } from "@shopify/app-bridge-react";
 import { Banner, Layout, Page } from "@shopify/polaris";
 import { useLoaderData } from "@remix-run/react";
 
-
-
-
 /**
  * A component to configure App Bridge.
  * @desc A thin wrapper around AppBridgeProvider that provides the following capabilities:
