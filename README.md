@@ -1,3 +1,7 @@
+# 2024 Update
+Shopify, Remix, and Cloudflare have all changed a lot since I first released this template and it is no longer the recommended way to develop this kind of app.
+Archiving this repository. 
+
 # Shopify App with Remix and Cloudflare Pages
 
 - [Remix Docs](https://remix.run/docs)
